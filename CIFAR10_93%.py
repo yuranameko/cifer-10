@@ -7,46 +7,6 @@
 # https://www.cs.toronto.edu/~kriz/cifar.html
 # 
 # 
-# 2019-07-25
-# 
-# ### 学籍番号： 318000
-# ### 氏　　名： 長浜 太郎
-
-# ## 課題内容
-# 
-# 下記のモデル設計では、<font color="Red">過学習</font>の傾向がはっきりと現れてしまっているため、<br>
-# 各自がモデルを改良して、精度と損失の２つのグラフで過学習していない状態であることを確認しつつ、より一層の精度の向上を目指す。
-# 
-# ### 参考：
-# 　　https://keras.io/ja/getting-started/sequential-model-guide/
-
-# ## 成績の判定基準：
-# 
-# <font color="Red">テスト用データ</font>に対する精度で成績を判定する。
-# 
-# - SS： 90 % 以上<br>
-# - Ｓ： 88 % 以上 90 % 未満<br>
-# - Ａ： 85 % 以上 88 % 未満<br>
-# - Ｂ： 80 % 以上 85 % 未満<br>
-# - Ｃ： 80 % 未満<br>
-# - Ｄ： 出席をほとんどせず、課題も出さない場合
-# 
-# ## <font color="Red">過学習</font>の傾向がある場合は<font color="Red">提出しないこと！</font>
-# 
-# ## <font color="Red">提出期限</font>：
-# ### 2019年07月28日(日) 18:00
-# 
-# - 提出先：<br>
-# 　　k_wada@nagahama-i-bio.ac.jp<br>
-# - 件名：<br>
-# 　　プログラミング実習１の最終成果物<br>
-# - 添付ファイル：<br>
-# 　　本ファイルを編集したファイル (CIFAR10-Start.ipynb)<br>
-# - 本文：<br>
-# 　　学生番号と氏名
-
-# ## 各種ライブラリのインポート
-
 # In[1]:
 
 from keras.datasets import cifar10
@@ -81,30 +41,20 @@ tf.logging.set_verbosity(tf.logging.ERROR)
 regularizer=regularizers.l2(1.0e-4)
 initializer=he_normal()
 
-# ## 計算開始時刻の記録
-
 # In[2]:
 
 start_time = datetime.datetime.now()
 print(start_time)
-
-# ## Numpy の乱数の種を設定
-# 
-# 再実行後も train, validation, test の各データセットが同一となるために必要
 
 # In[3]:
 
 seed = 456123789
 np.random.seed(seed=seed)
 
-# ## CIFAR10 のデータをロードし、学習に使用するデータセットの割合を設定
-
 # In[4]:
-
-# CIFAR10 のデータをロード
 (X_train, Y_train), (x_test, y_test) = cifar10.load_data()
 
-# データセットの最初の rate (0～1) の割合だけ使用
+
 rate = 1.0
 num_train = round(X_train.shape[0] * rate)
 num_test  = round(x_test.shape[0]  * rate)
@@ -121,7 +71,7 @@ Y_train = Y_train[select_train]
 x_test  = x_test[select_test]
 y_test  = y_test[select_test]
 
-# ## CIFAR10 の正解ラベル名を設定
+
 
 # In[5]:
 
@@ -130,7 +80,6 @@ labels = [
     'dog', 'frog', 'horse', 'ship', 'truck'
 ]
 
-# ## 画像データを 0～1 の範囲に変換 (0-255 => 0-1)
 
 # In[6]:
 
@@ -139,21 +88,17 @@ x_test  = x_test.astype('float32')
 X_train /= 255
 x_test  /= 255
 
-# ## 正解ラベルを One-hot 表現に変換
 
 # In[7]:
 
 Y_train = to_categorical(Y_train)
 y_test  = to_categorical(y_test)
 
-# ## 上記の train のデータを訓練用と検証用とに分割
 
 # In[8]:
 
-# 検証用データの割合
 validation_rate = 0.2
 
-# 訓練用データの個数
 num_train = round(X_train.shape[0] * (1 - validation_rate))
 
 x_train = X_train[:num_train]
@@ -168,7 +113,6 @@ print("y_valid.shape = ", y_valid.shape)
 print("x_test.shape  = ", x_test.shape)
 print("y_test.shape  = ", y_test.shape)
 
-# ## モデルの構築
 
 # In[9]:
 
@@ -292,13 +236,11 @@ model.add(Dropout(0.5))
 model.add(Dense(10))
 model.add(Activation('softmax'))
 
-# ## モデルの概要を表示
 
 # In[10]:
 
 model.summary()
 
-# ## モデルのコンパイル
 
 # In[11]:
 
@@ -306,19 +248,9 @@ model.compile(loss='categorical_crossentropy',
               optimizer='Nadam',
               metrics=['accuracy'])
 
-# ## TensorBoard の設定
-# 
-# 下記のフォルダ内にある過去の学習ログのファイルを削除してから<br>
-# コマンドプロンプト上で、この Notebook のファイルがある場所に移動した後で、<br>
-# 以下のコマンドを実行する。<br>
-# 
 # `tensorboard --logdir="./logs"`
 # 
-# 上記のコマンドを実行後に、指示が表示されるので、ブラウザ上で<br>
-# 
 # `http://localhost:6006`
-# 
-# の URL を入力して TensorBoard を開く。
 # 
 # https://keras.io/ja/callbacks/#tensorboard
 
@@ -343,7 +275,6 @@ def step_decay(epoch):
 
 lr_decay = keras.callbacks.LearningRateScheduler(step_decay)
 
-# ## データの水増し
 
 # In[13]:
 
@@ -362,8 +293,6 @@ batch_size = 128
 train_generator = train_datagen.flow(x_train, y_train, batch_size=batch_size)
 
 
-# ## 学習の実行
-
 # In[14]:
 
 aug_ratio = 10
@@ -379,11 +308,8 @@ history = model.fit_generator(
                     callbacks=[lr_decay, tb_cb]
 )
 
-# ## 学習の履歴をグラフ表示
-
 # In[15]:
 
-# acc、val_acc のプロット
 plt.figure()
 plt.plot(history.history["acc"], label="acc", ls="-", marker="o")
 plt.plot(history.history["val_acc"], label="val_acc", ls="-", marker="x")
@@ -392,7 +318,6 @@ plt.xlabel("epoch")
 plt.title("Training and validation accuracy")
 plt.legend(loc="lower right")
 
-# loss, val_loss のプロット
 plt.figure()
 plt.plot(history.history["loss"], label="loss", ls="-", marker="o")
 plt.plot(history.history["val_loss"], label="val_loss", ls="-", marker="x")
@@ -403,8 +328,6 @@ plt.legend(loc="lower left")
 
 plt.show()
 
-# ## テスト用データを使った最終評価
-
 # In[16]:
 
 loss, score = model.evaluate(x_test, y_test, batch_size=32, verbose=0)
@@ -412,7 +335,6 @@ loss, score = model.evaluate(x_test, y_test, batch_size=32, verbose=0)
 print('Test loss    :', loss)
 print('Test accuracy:', score)
 
-# ## テスト用データの先頭の 10 枚を可視化
 
 # In[17]:
 
@@ -429,25 +351,22 @@ for i in range(10):
 plt.suptitle("The first ten of the test data", fontsize=20)
 plt.show()
 
-# ## テストデータの先頭の 10 枚の予測結果と正解ラベルを表示
 
 # In[18]:
 
-print("予測：")
+print("prediction：")
 pred = np.argmax(model.predict(x_test[:10]), axis=1)
 s = ""
 for i in range(10):
     s += "{:12s}".format(labels[pred[i]])
 print(s)
 
-print("\n正解：")
+print("\nanswer：")
 answer = np.argmax(y_test[:10], axis=1)
 s = ""
 for i in range(10):
     s += "{:12s}".format(labels[answer[i]])
 print(s)
-
-# ## 経過時間を表示
 
 # In[19]:
 
